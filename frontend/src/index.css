@@ -1771,3 +1771,38 @@ input, select, textarea {
 .badge-blue { background: rgba(56, 126, 209, 0.15); color: #387ed1; }
 .badge-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
 .badge-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+/* Light Theme Variables */
+[data-theme="light"] {
+  --bg-app: #f8fafc;
+  --bg-topbar: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f1f5f9;
+  --bg-card-hover: #e2e8f0;
+  --bg-input: #f1f5f9;
+  --bg-chip: #e2e8f0;
+  --bg-chip-active: #cbd5e1;
+  --bg-modal: #ffffff;
+
+  --border-subtle: #e2e8f0;
+  --border-card: #cbd5e1;
+  --border-focus: #2563eb;
+
+  --text-white: #0f172a;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-dark: #cbd5e1;
+}
+
+/* Responsive Shell Breakpoints */
+@media (max-width: 768px) {
+  .client-desktop-sidebar {
+    display: none !important;
+  }
+  .client-mobile-bottom-tabs {
+    display: grid !important;
+  }
+}
+

@@ -1,19 +1,42 @@
 """JWT token creation and validation using python-jose."""
 from datetime import datetime, timedelta, timezone
 from typing import Any
+import uuid
 
 from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 from app.config import settings
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
-    """Create a signed JWT access token."""
-    to_encode = data.copy()
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a plain password against the bcrypt hash."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    """Hash a password using bcrypt."""
+    return pwd_context.hash(password)
+
+
+def create_access_token(
+    user_id: uuid.UUID | str,
+    role: str,
+    client_id: uuid.UUID | str | None = None,
+    expires_delta: timedelta | None = None,
+) -> str:
+    """Create a signed JWT access token containing sub, role, client_id, and exp."""
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.jwt_access_token_expire_minutes)
     )
-    to_encode["exp"] = expire
+    to_encode: dict[str, Any] = {
+        "sub": str(user_id),
+        "role": role,
+        "client_id": str(client_id) if client_id else None,
+        "exp": expire,
+    }
     return jwt.encode(to_encode, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 

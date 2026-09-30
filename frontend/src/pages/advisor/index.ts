@@ -1,0 +1,7 @@
+export { AdvisorDashboardPage as AdvisorCommandCenterPage } from './AdvisorDashboardPage'
+export { AdvisorClientsPage } from './AdvisorClientsPage'
+export { AdvisorRunsPage } from './AdvisorRunsPage'
+export { AdvisorBacktestPage } from './AdvisorBacktestPage'
+export { AdvisorGuardrailsPage } from './AdvisorGuardrailsPage'
+export { AdvisorTaxRulesPage } from './AdvisorTaxRulesPage'
+export { AdvisorSettingsPage } from './AdvisorSettingsPage'

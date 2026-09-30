@@ -1,11 +1,12 @@
 """FastAPI dependency functions for authentication and authorization."""
 import uuid
+from typing import Callable
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Path, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.jwt import decode_token
 from app.database import get_db
@@ -48,3 +49,34 @@ async def require_advisor(current_user: User = Depends(get_current_user)) -> Use
             detail="Advisor access required",
         )
     return current_user
+
+
+def require_client_self(
+    client_id_param_name: str = "client_id",
+) -> Callable:
+    """
+    Guard: verifies that the authenticated user either has role 'advisor'
+    or has role 'client' matching the requested client_id.
+    Raises 403 otherwise.
+    """
+    async def dependency(
+        client_id: uuid.UUID = Path(..., alias=client_id_param_name),
+        current_user: User = Depends(get_current_user),
+    ) -> User:
+        if current_user.role == "advisor":
+            return current_user
+        
+        if current_user.role == "client":
+            if current_user.client_id is None or current_user.client_id != client_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access forbidden: cannot access another client's data",
+                )
+            return current_user
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
+        )
+
+    return dependency

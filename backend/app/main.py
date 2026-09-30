@@ -10,7 +10,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import check_db_connection
+from app.database import engine, Base, AsyncSessionLocal, check_db_connection
+from app.seed_demo import ensure_demo_users
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -18,21 +19,24 @@ logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Run Alembic migrations and seed on startup."""
+    """Run migrations/create tables and seed demo users on startup."""
     logger.info("🚀 ShockHarvester API starting up...")
 
-    # Run alembic migrations
+    # Create tables if not existing
     try:
-        result = subprocess.run(
-            ["python", "-m", "alembic", "upgrade", "head"],
-            capture_output=True, text=True, cwd="."
-        )
-        if result.returncode == 0:
-            logger.info("✅ Database migrations applied")
-        else:
-            logger.warning(f"⚠️  Migration output: {result.stderr}")
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("✅ Database tables verified")
     except Exception as e:
-        logger.warning(f"⚠️  Could not run migrations: {e}")
+        logger.warning(f"⚠️ Table verification note: {e}")
+
+    # Seed demo accounts
+    try:
+        async with AsyncSessionLocal() as session:
+            await ensure_demo_users(session)
+        logger.info("✅ Demo users ready")
+    except Exception as e:
+        logger.warning(f"⚠️ Demo users seeding note: {e}")
 
     # Verify DB connection
     db_ok = await check_db_connection()
@@ -41,8 +45,15 @@ async def lifespan(app: FastAPI):
     else:
         logger.error("❌ Database connection FAILED")
 
+    # Start live market simulation background task
+    import asyncio
+    from app.services.market_simulator import market_simulation_loop
+    sim_task = asyncio.create_task(market_simulation_loop())
+    logger.info("✅ Market simulator background loop started")
+
     yield
 
+    sim_task.cancel()
     logger.info("ShockHarvester API shutting down")
 
 
@@ -60,6 +71,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
+        "*",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -74,6 +86,9 @@ from app.routers import (  # noqa: E402
     portfolio_router,
     securities_router,
     tax_router,
+    me_router,
+    advisor_router,
+    ws_router,
 )
 
 app.include_router(auth_router)
@@ -82,6 +97,9 @@ app.include_router(portfolio_router)
 app.include_router(tax_router)
 app.include_router(market_router)
 app.include_router(events_router)
+app.include_router(me_router)
+app.include_router(advisor_router)
+app.include_router(ws_router)
 
 
 # ── Health ────────────────────────────────────────────────────────────────────

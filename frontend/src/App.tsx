@@ -1,20 +1,27 @@
-import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import Navbar from './components/Navbar'
-import WatchlistSidebar from './components/WatchlistSidebar'
-import AskAngelModal from './components/AskAngelModal'
-
+import { ThemeProvider } from './contexts/ThemeContext'
 import LoginPage from './pages/LoginPage'
-import MarketsPage from './pages/MarketsPage'
-import TradeOnePage from './pages/TradeOnePage'
-import PortfolioPage from './pages/PortfolioPage'
-import OrdersPage from './pages/OrdersPage'
-import PositionsPage from './pages/PositionsPage'
-import ShockHarvesterPage from './pages/ShockHarvesterPage'
-import TaxPage from './pages/TaxPage'
-import ClientsPage from './pages/ClientsPage'
-import SecuritiesPage from './pages/SecuritiesPage'
+import ClientLayout from './layouts/ClientLayout'
+import AdvisorLayout from './layouts/AdvisorLayout'
+
+import ClientHomePage from './pages/client/ClientHomePage'
+import ClientWatchlistPage from './pages/client/ClientWatchlistPage'
+import ClientStockDetailPage from './pages/client/ClientStockDetailPage'
+import ClientPortfolioPage from './pages/client/ClientPortfolioPage'
+import ClientTaxPage from './pages/client/ClientTaxPage'
+import ClientActivityPage from './pages/client/ClientActivityPage'
+import ClientProfilePage from './pages/client/ClientProfilePage'
+
+import {
+  AdvisorCommandCenterPage,
+  AdvisorClientsPage,
+  AdvisorRunsPage,
+  AdvisorBacktestPage,
+  AdvisorGuardrailsPage,
+  AdvisorTaxRulesPage,
+  AdvisorSettingsPage,
+} from './pages/advisor'
 
 import './index.css'
 
@@ -22,8 +29,18 @@ function AuthGuard() {
   const { user, isLoading } = useAuth()
   if (isLoading) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0c0d10' }}>
-        <div style={{ color: '#387ed1', fontWeight: 600 }}>Loading Angel One ShockHarvester...</div>
+      <div style={{
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#090d14',
+        color: '#10b981',
+        fontWeight: 600,
+        fontSize: '15px',
+        fontFamily: 'Inter, system-ui, sans-serif'
+      }}>
+        Initializing ShockHarvester...
       </div>
     )
   }
@@ -31,58 +48,52 @@ function AuthGuard() {
   return <Outlet />
 }
 
-function MainLayout() {
-  const [selectedStock, setSelectedStock] = useState('NIFTY')
-  
-  // Show Watchlist on TradeOne and Portfolio by default (or collapsible everywhere)
-  return (
-    <div className="app-container">
-      {/* Top Navbar */}
-      <Navbar />
-
-      {/* Main Body */}
-      <div className="app-body">
-        {/* Left Watchlist Sidebar */}
-        <WatchlistSidebar 
-          selectedSymbol={selectedStock}
-          onSelectStock={(s) => setSelectedStock(s.symbol)}
-        />
-
-        {/* Dynamic Main Viewport */}
-        <main className="main-viewport">
-          <Outlet />
-        </main>
-      </div>
-
-      {/* Floating Ask Angel AI */}
-      <AskAngelModal />
-    </div>
-  )
+function RoleHomeRedirect() {
+  const { user, isLoading } = useAuth()
+  if (isLoading) return null
+  if (!user) return <Navigate to="/login" replace />
+  if (user.role === 'advisor') return <Navigate to="/advisor" replace />
+  return <Navigate to="/app" replace />
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<AuthGuard />}>
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Navigate to="/markets" replace />} />
-              <Route path="/markets" element={<MarketsPage />} />
-              <Route path="/tradeone" element={<TradeOnePage />} />
-              <Route path="/portfolio" element={<PortfolioPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/positions" element={<PositionsPage />} />
-              <Route path="/shock-harvester" element={<ShockHarvesterPage />} />
-              <Route path="/tax" element={<TaxPage />} />
-              <Route path="/clients" element={<ClientsPage />} />
-              <Route path="/securities" element={<SecuritiesPage />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            
+            <Route element={<AuthGuard />}>
+              <Route path="/" element={<RoleHomeRedirect />} />
+
+              {/* Client App Shell */}
+              <Route path="/app" element={<ClientLayout />}>
+                <Route index element={<ClientHomePage />} />
+                <Route path="watchlist" element={<ClientWatchlistPage />} />
+                <Route path="stocks/:symbol" element={<ClientStockDetailPage />} />
+                <Route path="portfolio" element={<ClientPortfolioPage />} />
+                <Route path="tax" element={<ClientTaxPage />} />
+                <Route path="activity" element={<ClientActivityPage />} />
+                <Route path="profile" element={<ClientProfilePage />} />
+              </Route>
+
+              {/* Advisor Console Shell */}
+              <Route path="/advisor" element={<AdvisorLayout />}>
+                <Route index element={<AdvisorCommandCenterPage />} />
+                <Route path="clients" element={<AdvisorClientsPage />} />
+                <Route path="runs" element={<AdvisorRunsPage />} />
+                <Route path="backtest" element={<AdvisorBacktestPage />} />
+                <Route path="guardrails" element={<AdvisorGuardrailsPage />} />
+                <Route path="tax-rules" element={<AdvisorTaxRulesPage />} />
+                <Route path="settings" element={<AdvisorSettingsPage />} />
+              </Route>
             </Route>
-          </Route>
-          <Route path="*" element={<Navigate to="/markets" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+
+            <Route path="*" element={<RoleHomeRedirect />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
