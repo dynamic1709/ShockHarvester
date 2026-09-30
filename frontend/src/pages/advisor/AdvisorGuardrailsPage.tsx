@@ -29,9 +29,10 @@ export const AdvisorGuardrailsPage: React.FC = () => {
       const res = await axios.get('/api/advisor/guardrails', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      setViolations(res.data)
+      setViolations(res.data || [])
     } catch (err) {
       console.error('Error fetching guardrails log', err)
+      setViolations([])
     } finally {
       setLoading(false)
     }
@@ -42,8 +43,8 @@ export const AdvisorGuardrailsPage: React.FC = () => {
   }, [])
 
   const filtered = filterRule
-    ? violations.filter((v) => v.rule.toLowerCase().includes(filterRule.toLowerCase()))
-    : violations
+    ? (violations || []).filter((v) => (v.rule || '').toLowerCase().includes(filterRule.toLowerCase()))
+    : (violations || [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '40px' }}>
@@ -116,7 +117,7 @@ export const AdvisorGuardrailsPage: React.FC = () => {
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#fca5a5' }}>CIRCUIT BREAKER LOCKS</span>
           </div>
           <div style={{ fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-            {violations.filter((v) => v.rule.includes('CIRCUIT')).length}
+            {(violations || []).filter((v) => (v.rule || '').includes('CIRCUIT')).length}
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Orders blocked at lower/upper bands</div>
         </div>
@@ -132,7 +133,7 @@ export const AdvisorGuardrailsPage: React.FC = () => {
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#7dd3fc' }}>30-DAY COOLING-OFF</span>
           </div>
           <div style={{ fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-            {violations.filter((v) => v.rule.includes('COOLING')).length}
+            {(violations || []).filter((v) => (v.rule || '').includes('COOLING')).length}
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>Switched to correlated substitute ETFs</div>
         </div>
@@ -189,7 +190,7 @@ export const AdvisorGuardrailsPage: React.FC = () => {
                 filtered.map((v) => (
                   <tr key={v.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
                     <td style={{ padding: '14px 18px', color: '#64748b', fontSize: '12px' }}>
-                      {new Date(v.created_at).toLocaleString()}
+                      {v.created_at ? new Date(v.created_at).toLocaleString() : 'N/A'}
                     </td>
                     <td style={{ padding: '14px 18px', color: '#f8fafc', fontWeight: 600 }}>
                       {v.client_name}

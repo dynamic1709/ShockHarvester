@@ -74,10 +74,14 @@ export const AdvisorClientsPage: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
         params,
       })
-      setClients(res.data.items)
-      setTotal(res.data.total)
+      if (res.data) {
+        setClients(res.data.items || [])
+        setTotal(res.data.total || 0)
+      }
     } catch (err) {
       console.error('Error loading clients', err)
+      setClients([])
+      setTotal(0)
     } finally {
       setLoading(false)
     }
@@ -109,7 +113,7 @@ export const AdvisorClientsPage: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#f8fafc', margin: 0 }}>
-            Client Directory ({total.toLocaleString()} Accounts)
+            Client Directory ({(total || 0).toLocaleString()} Accounts)
           </h1>
           <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0' }}>
             Search and audit portfolio valuations, FIFO lots, and realized tax gains across all managed investors.
@@ -197,14 +201,14 @@ export const AdvisorClientsPage: React.FC = () => {
                     Loading accounts...
                   </td>
                 </tr>
-              ) : clients.length === 0 ? (
+              ) : (clients || []).length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
                     No matching clients found.
                   </td>
                 </tr>
               ) : (
-                clients.map((c) => (
+                (clients || []).map((c) => (
                   <tr
                     key={c.id}
                     style={{
@@ -244,20 +248,20 @@ export const AdvisorClientsPage: React.FC = () => {
                       <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{c.model_name}</div>
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 700, color: '#f8fafc' }}>
-                      ₹{c.portfolio_value_inr.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      ₹{(c.portfolio_value_inr || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'right', color: '#94a3b8' }}>
-                      ₹{c.cash_balance_inr.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      ₹{(c.cash_balance_inr || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'center', color: '#cbd5e1' }}>
-                      {c.lots_count}
+                      {c.lots_count || 0}
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'right' }}>
                       <span style={{
-                        color: c.net_stcg_inr + c.net_ltcg_inr >= 0 ? '#10b981' : '#ef4444',
+                        color: ((c.net_stcg_inr || 0) + (c.net_ltcg_inr || 0)) >= 0 ? '#10b981' : '#ef4444',
                         fontWeight: 700,
                       }}>
-                        ₹{(c.net_stcg_inr + c.net_ltcg_inr).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        ₹{((c.net_stcg_inr || 0) + (c.net_ltcg_inr || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                       </span>
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'center' }}>
@@ -301,7 +305,7 @@ export const AdvisorClientsPage: React.FC = () => {
           color: '#94a3b8',
         }}>
           <div>
-            Showing {clients.length > 0 ? (page - 1) * 25 + 1 : 0} to {Math.min(page * 25, total)} of {total} accounts
+            Showing {(clients || []).length > 0 ? (page - 1) * 25 + 1 : 0} to {Math.min(page * 25, total || 0)} of {total || 0} accounts
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
@@ -320,14 +324,14 @@ export const AdvisorClientsPage: React.FC = () => {
             </button>
             <button
               onClick={() => setPage((p) => p + 1)}
-              disabled={page * 25 >= total}
+              disabled={page * 25 >= (total || 0)}
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: page * 25 >= total ? '#475569' : '#f8fafc',
+                color: page * 25 >= (total || 0) ? '#475569' : '#f8fafc',
                 padding: '6px 12px',
                 borderRadius: '6px',
-                cursor: page * 25 >= total ? 'not-allowed' : 'pointer',
+                cursor: page * 25 >= (total || 0) ? 'not-allowed' : 'pointer',
               }}
             >
               Next
@@ -409,7 +413,7 @@ export const AdvisorClientsPage: React.FC = () => {
             <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px', borderRadius: '8px' }}>
               <span style={{ fontSize: '11px', color: '#94a3b8' }}>Portfolio Valuation</span>
               <div style={{ fontSize: '18px', fontWeight: 800, color: '#f8fafc' }}>
-                ₹{selectedClient.portfolio_value_inr.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                ₹{(selectedClient.portfolio_value_inr || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </div>
             </div>
             <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px', borderRadius: '8px' }}>
@@ -423,10 +427,10 @@ export const AdvisorClientsPage: React.FC = () => {
           {/* Tax Lots Accordion */}
           <div style={{ marginBottom: '20px' }}>
             <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', marginBottom: '10px' }}>
-              Open FIFO Tax Lots ({selectedClient.tax_lots.length})
+              Open FIFO Tax Lots ({(selectedClient.tax_lots || []).length})
             </h4>
             <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {selectedClient.tax_lots.map((lot) => (
+              {(selectedClient.tax_lots || []).map((lot) => (
                 <div
                   key={lot.id}
                   style={{
@@ -443,12 +447,12 @@ export const AdvisorClientsPage: React.FC = () => {
                   <div>
                     <div style={{ fontWeight: 700, color: '#f8fafc' }}>{lot.symbol}</div>
                     <div style={{ color: '#64748b', fontSize: '11px' }}>
-                      Bought: {lot.buy_date} · {lot.remaining_qty} shares @ ₹{lot.buy_price.toFixed(2)}
+                      Bought: {lot.buy_date} · {lot.remaining_qty} shares @ ₹{(lot.buy_price || 0).toFixed(2)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ color: lot.unrealized_gain_loss >= 0 ? '#10b981' : '#ef4444', fontWeight: 700 }}>
-                      {lot.unrealized_gain_loss >= 0 ? '+' : ''}₹{lot.unrealized_gain_loss.toFixed(2)}
+                    <div style={{ color: (lot.unrealized_gain_loss || 0) >= 0 ? '#10b981' : '#ef4444', fontWeight: 700 }}>
+                      {(lot.unrealized_gain_loss || 0) >= 0 ? '+' : ''}₹{(lot.unrealized_gain_loss || 0).toFixed(2)}
                     </div>
                     <span style={{
                       fontSize: '10px',
@@ -471,10 +475,10 @@ export const AdvisorClientsPage: React.FC = () => {
               Recent Executed Trades
             </h4>
             <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {selectedClient.recent_trades.length === 0 ? (
+              {(selectedClient.recent_trades || []).length === 0 ? (
                 <div style={{ color: '#64748b', fontSize: '12px' }}>No trades recorded yet.</div>
               ) : (
-                selectedClient.recent_trades.map((tr) => (
+                (selectedClient.recent_trades || []).map((tr) => (
                   <div
                     key={tr.id}
                     style={{
@@ -500,7 +504,7 @@ export const AdvisorClientsPage: React.FC = () => {
                       <span style={{ color: '#64748b', marginLeft: '6px' }}>x {tr.qty}</span>
                     </div>
                     <div style={{ color: '#f8fafc', fontWeight: 700 }}>
-                      ₹{tr.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      ₹{(tr.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </div>
                   </div>
                 ))

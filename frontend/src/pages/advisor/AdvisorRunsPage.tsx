@@ -52,9 +52,10 @@ export const AdvisorRunsPage: React.FC = () => {
       const res = await axios.get('/api/advisor/runs', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      setRuns(res.data)
+      setRuns(res.data || [])
     } catch (err) {
       console.error('Error loading runs', err)
+      setRuns([])
     } finally {
       setLoading(false)
     }
@@ -114,14 +115,14 @@ export const AdvisorRunsPage: React.FC = () => {
                     Loading execution history...
                   </td>
                 </tr>
-              ) : runs.length === 0 ? (
+              ) : (runs || []).length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
                     No rebalance runs recorded yet. Trigger a shock in the Command Center to run optimization.
                   </td>
                 </tr>
               ) : (
-                runs.map((r) => (
+                (runs || []).map((r) => (
                   <tr
                     key={r.id}
                     style={{
@@ -154,16 +155,16 @@ export const AdvisorRunsPage: React.FC = () => {
                       </span>
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'center', color: '#f8fafc', fontWeight: 700 }}>
-                      {r.portfolios_rebalanced} / {r.portfolios_checked}
+                      {r.portfolios_rebalanced || 0} / {r.portfolios_checked || 0}
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 700, color: '#38bdf8' }}>
-                      {(r.duration_ms / 1000.0).toFixed(2)} s
+                      {((r.duration_ms || 0) / 1000.0).toFixed(2)} s
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 800, color: '#10b981' }}>
-                      ₹{r.tax_saved_inr.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      ₹{(r.tax_saved_inr || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </td>
-                    <td style={{ padding: '14px 18px', textAlign: 'right', color: r.blocked_trades > 0 ? '#f59e0b' : '#64748b' }}>
-                      {r.blocked_trades}
+                    <td style={{ padding: '14px 18px', textAlign: 'right', color: (r.blocked_trades || 0) > 0 ? '#f59e0b' : '#64748b' }}>
+                      {r.blocked_trades || 0}
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'center' }}>
                       <button
@@ -248,13 +249,13 @@ export const AdvisorRunsPage: React.FC = () => {
             <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px', borderRadius: '8px' }}>
               <span style={{ fontSize: '11px', color: '#94a3b8' }}>Total Execution Time</span>
               <div style={{ fontSize: '18px', fontWeight: 800, color: '#38bdf8' }}>
-                {(selectedRun.duration_ms / 1000.0).toFixed(3)} s
+                {((selectedRun.duration_ms || 0) / 1000.0).toFixed(3)} s
               </div>
             </div>
             <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '12px', borderRadius: '8px' }}>
               <span style={{ fontSize: '11px', color: '#94a3b8' }}>Tax Alpha Generated</span>
               <div style={{ fontSize: '18px', fontWeight: 800, color: '#10b981' }}>
-                ₹{selectedRun.tax_saved_inr.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                ₹{(selectedRun.tax_saved_inr || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </div>
             </div>
           </div>
@@ -281,7 +282,7 @@ export const AdvisorRunsPage: React.FC = () => {
                     {stage.replace('_', ' ')}
                   </span>
                   <span style={{ color: '#f8fafc', fontWeight: 700 }}>
-                    {Number(ms).toFixed(2)} ms
+                    {Number(ms || 0).toFixed(2)} ms
                   </span>
                 </div>
               ))}
@@ -291,10 +292,10 @@ export const AdvisorRunsPage: React.FC = () => {
           {/* Sample Executed Orders */}
           <div style={{ marginBottom: '20px' }}>
             <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', marginBottom: '10px' }}>
-              Sample Executed Orders ({selectedRun.sample_trades.length})
+              Sample Executed Orders ({(selectedRun.sample_trades || []).length})
             </h4>
             <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {selectedRun.sample_trades.map((t) => (
+              {(selectedRun.sample_trades || []).map((t) => (
                 <div
                   key={t.id}
                   style={{
@@ -320,13 +321,13 @@ export const AdvisorRunsPage: React.FC = () => {
           </div>
 
           {/* Guardrail Violations */}
-          {selectedRun.guardrail_violations.length > 0 && (
+          {(selectedRun.guardrail_violations || []).length > 0 && (
             <div>
               <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#fca5a5', marginBottom: '10px' }}>
-                Safety Guardrail Blocks ({selectedRun.guardrail_violations.length})
+                Safety Guardrail Blocks ({(selectedRun.guardrail_violations || []).length})
               </h4>
               <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {selectedRun.guardrail_violations.map((v) => (
+                {(selectedRun.guardrail_violations || []).map((v) => (
                   <div
                     key={v.id}
                     style={{
