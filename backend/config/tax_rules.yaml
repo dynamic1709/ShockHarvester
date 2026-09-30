@@ -1,0 +1,46 @@
+# ShockHarvester Tax & Regulatory Configuration
+# Indian listed equity rules — verify against current law before production use
+# All values validated by Pydantic on startup
+
+# Capital gains tax rates
+stcg_rate: 0.20              # Short-term capital gains tax rate (listed equity, post Jul 2024 budget)
+ltcg_rate: 0.125             # Long-term capital gains tax rate (listed equity, post Jul 2024 budget)
+
+# LTCG exemption (per financial year)
+ltcg_annual_exemption_inr: 125000   # ₹1.25 lakh LTCG exempt per FY
+
+# Holding period threshold
+long_term_holding_days: 365  # Held > 365 days = long-term (listed equity)
+
+# Transaction costs (as fraction of trade value)
+stt_delivery_buy: 0.001      # STT on delivery buy: 0.1%
+stt_delivery_sell: 0.001     # STT on delivery sell: 0.1%
+brokerage_rate: 0.0003       # Flat brokerage: 0.03% (typical discount broker)
+
+# Tax-loss harvesting
+cooling_off_days: 30         # Days before repurchase of same security (no formal wash-sale in India; this is a configurable prudential buffer)
+
+# Circuit band options (% from previous close)
+circuit_band_options:
+  - 0.02   # 2%
+  - 0.05   # 5%
+  - 0.10   # 10%
+  - 0.20   # 20%
+
+# Index-level circuit breakers (NSE/BSE market-wide)
+index_circuit_levels:
+  - 0.10   # 10% — 45-minute halt
+  - 0.15   # 15% — 1 hour 45 minute halt
+  - 0.20   # 20% — rest of day halt
+
+# Set-off rules
+# Short-term capital loss can offset: STCG and LTCG
+# Long-term capital loss can offset: only LTCG
+setoff_stloss_offsets: ["stcg", "ltcg"]
+setoff_ltloss_offsets: ["ltcg"]
+
+# Optimizer cost weights
+lambda_tax: 0.5              # Weight on tax cost in objective
+lambda_transaction: 0.3      # Weight on transaction cost in objective
+lambda_harvest: 0.4          # Weight on harvest credit in objective
+turnover_cap_per_asset: 0.30 # Max turnover per asset per rebalance (30%)
