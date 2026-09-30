@@ -271,7 +271,7 @@ export const AdvisorBacktestPage: React.FC = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#94a3b8' }}>Tax Alpha Harvested:</span>
-                <span style={{ color: '#10b981', fontWeight: 800 }}>₹{result.shock_harvester.tax_alpha_inr.toLocaleString()}</span>
+                <span style={{ color: '#10b981', fontWeight: 800 }}>₹{(result.shock_harvester?.tax_alpha_inr || 0).toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#94a3b8' }}>Max Drawdown:</span>

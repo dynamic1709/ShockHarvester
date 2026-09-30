@@ -23,6 +23,7 @@ import {
   AdvisorSettingsPage,
 } from './pages/advisor'
 
+import { ErrorBoundary } from './components/ErrorBoundary'
 import './index.css'
 
 function AuthGuard() {
@@ -58,42 +59,44 @@ function RoleHomeRedirect() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            
-            <Route element={<AuthGuard />}>
-              <Route path="/" element={<RoleHomeRedirect />} />
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              
+              <Route element={<AuthGuard />}>
+                <Route path="/" element={<RoleHomeRedirect />} />
 
-              {/* Client App Shell */}
-              <Route path="/app" element={<ClientLayout />}>
-                <Route index element={<ClientHomePage />} />
-                <Route path="watchlist" element={<ClientWatchlistPage />} />
-                <Route path="stocks/:symbol" element={<ClientStockDetailPage />} />
-                <Route path="portfolio" element={<ClientPortfolioPage />} />
-                <Route path="tax" element={<ClientTaxPage />} />
-                <Route path="activity" element={<ClientActivityPage />} />
-                <Route path="profile" element={<ClientProfilePage />} />
+                {/* Client App Shell */}
+                <Route path="/app" element={<ClientLayout />}>
+                  <Route index element={<ClientHomePage />} />
+                  <Route path="watchlist" element={<ClientWatchlistPage />} />
+                  <Route path="stocks/:symbol" element={<ClientStockDetailPage />} />
+                  <Route path="portfolio" element={<ClientPortfolioPage />} />
+                  <Route path="tax" element={<ClientTaxPage />} />
+                  <Route path="activity" element={<ClientActivityPage />} />
+                  <Route path="profile" element={<ClientProfilePage />} />
+                </Route>
+
+                {/* Advisor Console Shell */}
+                <Route path="/advisor" element={<AdvisorLayout />}>
+                  <Route index element={<AdvisorCommandCenterPage />} />
+                  <Route path="clients" element={<AdvisorClientsPage />} />
+                  <Route path="runs" element={<AdvisorRunsPage />} />
+                  <Route path="backtest" element={<AdvisorBacktestPage />} />
+                  <Route path="guardrails" element={<AdvisorGuardrailsPage />} />
+                  <Route path="tax-rules" element={<AdvisorTaxRulesPage />} />
+                  <Route path="settings" element={<AdvisorSettingsPage />} />
+                </Route>
               </Route>
 
-              {/* Advisor Console Shell */}
-              <Route path="/advisor" element={<AdvisorLayout />}>
-                <Route index element={<AdvisorCommandCenterPage />} />
-                <Route path="clients" element={<AdvisorClientsPage />} />
-                <Route path="runs" element={<AdvisorRunsPage />} />
-                <Route path="backtest" element={<AdvisorBacktestPage />} />
-                <Route path="guardrails" element={<AdvisorGuardrailsPage />} />
-                <Route path="tax-rules" element={<AdvisorTaxRulesPage />} />
-                <Route path="settings" element={<AdvisorSettingsPage />} />
-              </Route>
-            </Route>
-
-            <Route path="*" element={<RoleHomeRedirect />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </ThemeProvider>
+              <Route path="*" element={<RoleHomeRedirect />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }

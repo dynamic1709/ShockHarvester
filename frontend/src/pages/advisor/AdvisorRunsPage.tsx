@@ -134,7 +134,7 @@ export const AdvisorRunsPage: React.FC = () => {
                     <td style={{ padding: '14px 18px' }}>
                       <div style={{ fontWeight: 700, color: '#f8fafc' }}>{r.scenario_name}</div>
                       <div style={{ fontSize: '11px', color: '#64748b' }}>
-                        {new Date(r.created_at).toLocaleString()}
+                        {r.created_at ? new Date(r.created_at).toLocaleString() : 'N/A'}
                       </div>
                     </td>
                     <td style={{ padding: '14px 18px' }}>
@@ -220,7 +220,7 @@ export const AdvisorRunsPage: React.FC = () => {
                 {selectedRun.scenario_name}
               </h2>
               <div style={{ fontSize: '12px', color: '#64748b' }}>
-                Run ID: {selectedRun.id} · {new Date(selectedRun.created_at).toLocaleString()}
+                Run ID: {selectedRun.id} · {selectedRun.created_at ? new Date(selectedRun.created_at).toLocaleString() : 'N/A'}
               </div>
             </div>
             <button

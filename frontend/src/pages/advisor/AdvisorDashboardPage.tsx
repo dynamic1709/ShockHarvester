@@ -231,10 +231,10 @@ export const AdvisorDashboardPage: React.FC = () => {
             <DollarSign size={16} color="#38bdf8" />
           </div>
           <div style={{ fontSize: '24px', fontWeight: 800, color: '#f8fafc' }}>
-            ₹{summary ? (summary.total_aum_inr / 10000000).toFixed(2) : '0.00'} Cr
+            ₹{summary?.total_aum_inr ? (summary.total_aum_inr / 10000000).toFixed(2) : '0.00'} Cr
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
-            ₹{summary ? (summary.equity_aum_inr / 10000000).toFixed(2) : '0'} Cr Equity · ₹{summary ? (summary.cash_aum_inr / 10000000).toFixed(2) : '0'} Cr Cash
+            ₹{summary?.equity_aum_inr ? (summary.equity_aum_inr / 10000000).toFixed(2) : '0.00'} Cr Equity · ₹{summary?.cash_aum_inr ? (summary.cash_aum_inr / 10000000).toFixed(2) : '0.00'} Cr Cash
           </div>
         </div>
 
@@ -249,10 +249,10 @@ export const AdvisorDashboardPage: React.FC = () => {
             <Zap size={16} color="#10b981" />
           </div>
           <div style={{ fontSize: '24px', fontWeight: 800, color: '#10b981' }}>
-            ₹{summary ? (summary.total_tax_alpha_saved_inr / 100000).toFixed(2) : '0.00'} L
+            ₹{summary?.total_tax_alpha_saved_inr ? (summary.total_tax_alpha_saved_inr / 100000).toFixed(2) : '0.00'} L
           </div>
           <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px' }}>
-            From ₹{summary ? (summary.total_losses_harvested_inr / 100000).toFixed(1) : '0'} L capital losses harvested
+            From ₹{summary?.total_losses_harvested_inr ? (summary.total_losses_harvested_inr / 100000).toFixed(1) : '0.0'} L capital losses harvested
           </div>
         </div>
 
@@ -267,7 +267,7 @@ export const AdvisorDashboardPage: React.FC = () => {
             <Users size={16} color="#a78bfa" />
           </div>
           <div style={{ fontSize: '24px', fontWeight: 800, color: '#f8fafc' }}>
-            {summary?.total_clients.toLocaleString() || '1,000'}
+            {(summary?.total_clients ?? 1000).toLocaleString()}
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
             100% compliant under FY 2024–25 tax rules
@@ -285,10 +285,10 @@ export const AdvisorDashboardPage: React.FC = () => {
             <Activity size={16} color="#f59e0b" />
           </div>
           <div style={{ fontSize: '24px', fontWeight: 800, color: '#f8fafc' }}>
-            {summary?.total_rebalance_runs || 0}
+            {summary?.total_rebalance_runs ?? 0}
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
-            {summary?.total_guardrail_blocks || 0} safety guardrail interventions
+            {summary?.total_guardrail_blocks ?? 0} safety guardrail interventions
           </div>
         </div>
       </div>
@@ -490,7 +490,7 @@ export const AdvisorDashboardPage: React.FC = () => {
                 </div>
                 <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '8px', borderRadius: '6px' }}>
                   <span style={{ color: '#94a3b8' }}>Tax Alpha Saved:</span>
-                  <div style={{ color: '#10b981', fontWeight: 800 }}>₹{lastRunResult.tax_alpha_saved_inr.toLocaleString()}</div>
+                  <div style={{ color: '#10b981', fontWeight: 800 }}>₹{(lastRunResult.tax_alpha_saved_inr || 0).toLocaleString()}</div>
                 </div>
               </div>
             )}
@@ -513,7 +513,7 @@ export const AdvisorDashboardPage: React.FC = () => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '16px',
         }}>
-          {summary?.model_distribution.map((model) => (
+          {(summary?.model_distribution || []).map((model) => (
             <div
               key={model.id}
               style={{
